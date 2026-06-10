@@ -1,0 +1,6 @@
+{
+  "name": "PortfolioAI",
+  "description": "Create, manage, and share professional portfolios using AI-driven builders and premium templates.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

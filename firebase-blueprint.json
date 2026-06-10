@@ -1,0 +1,72 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile with SaaS subscription settings and AI usage credits",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Unique user ID matching Auth UID" },
+        "email": { "type": "string", "description": "Verified email address" },
+        "displayName": { "type": "string", "description": "Full name of the user" },
+        "photoURL": { "type": "string", "description": "Avatar image URL" },
+        "plan": { "type": "string", "enum": ["free", "pro"], "description": "Active subscription tier" },
+        "aiCredits": { "type": "integer", "description": "Remaining AI tokens for generation" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Account registration timestamp" }
+      },
+      "required": ["uid", "email", "plan", "aiCredits", "createdAt"]
+    },
+    "Portfolio": {
+      "title": "Portfolio",
+      "description": "Exhaustive professional portfolio website configurations",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique portfolio slug identifier" },
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "name": { "type": "string", "description": "Portfolio title name" },
+        "templateId": { "type": "string", "enum": ["dev", "designer", "freelancer", "student", "founder", "creative"], "description": "Selected visual template style" },
+        "title": { "type": "string", "description": "Headline e.g., Full Stack Engineer" },
+        "bio": { "type": "string", "description": "Short summary or bio summary" },
+        "description": { "type": "string", "description": "Detailed introductory paragraph" },
+        "profileImage": { "type": "string", "description": "Profile picture URL" },
+        "resumeUrl": { "type": "string", "description": "Uploaded resume PDF link" },
+        "customDomain": { "type": "string", "description": "Assigned custom domain name (Pro only)" },
+        "seoSettings": { "type": "object", "description": "Meta description, keywords, and title tags" },
+        "customStyles": { "type": "object", "description": "Theme setup, custom fonts, colors (hex)" },
+        "layout": { "type": "array", "description": "Array of section names tracking layout sequence order" },
+        "sections": { "type": "object", "description": "Key-value collection of actual portfolio segment content" },
+        "socialLinks": { "type": "object", "description": "Handles references to GitHub, LinkedIn, Twitter, etc." },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "name", "templateId", "layout", "sections", "createdAt", "updatedAt"]
+    },
+    "PortfolioAnalytics": {
+      "title": "PortfolioAnalytics",
+      "description": "Event logs capturing hits and traffic source stats",
+      "type": "object",
+      "properties": {
+        "portfolioId": { "type": "string", "description": "Associated portfolio identifier" },
+        "views": { "type": "integer", "description": "Incremental view counts" },
+        "visitors": { "type": "array", "description": "Track unique identifier digests" },
+        "trafficSources": { "type": "object", "description": "Source counts mapping" },
+        "projectHits": { "type": "object", "description": "Project clicks tallying" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["portfolioId", "views", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile document path"
+    },
+    "/portfolios/{portfolioId}": {
+      "schema": "Portfolio",
+      "description": "Active portfolios created by builders"
+    },
+    "/analytics/{analyticsId}": {
+      "schema": "PortfolioAnalytics",
+      "description": "Portfolio analytics aggregate tracking logs"
+    }
+  }
+}

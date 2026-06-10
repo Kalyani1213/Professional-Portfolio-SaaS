@@ -1,0 +1,78 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net (default deny)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Auth & Identity Validation Helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // 1. Users Collection Rules
+    match /users/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      allow create: if request.auth != null && request.auth.uid == userId
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.plan == 'free'
+        && request.resource.data.aiCredits == 20
+        && request.resource.data.createdAt is string;
+
+      allow update: if request.auth != null && request.auth.uid == userId
+        && request.resource.data.uid == resource.data.uid;
+    }
+
+    // 2. Portfolios Collection Rules
+    match /portfolios/{portfolioId} {
+      // Anyone can read a public published portfolio
+      allow read: if true;
+
+      // Owners can write portfolios
+      allow create: if isSignedIn() 
+        && isValidId(portfolioId)
+        && incoming().userId == request.auth.uid
+        && incoming().id == portfolioId
+        && incoming().createdAt is string;
+
+      allow update: if isSignedIn()
+        && existing().userId == request.auth.uid
+        && incoming().userId == request.auth.uid
+        && incoming().id == existing().id
+        && incoming().updatedAt is string;
+
+      allow delete: if isSignedIn()
+        && existing().userId == request.auth.uid;
+    }
+
+    // 3. Analytics Collection Rules
+    match /analytics/{analyticsId} {
+      // Owners can read their portfolio analytics
+      allow read: if isSignedIn()
+        && get(/databases/$(database)/documents/portfolios/$(analyticsId)).data.userId == request.auth.uid;
+
+      // Anyone can create or increment views
+      allow create: if true;
+      allow update: if true;
+    }
+  }
+}
